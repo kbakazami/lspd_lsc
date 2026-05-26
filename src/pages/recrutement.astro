@@ -1,0 +1,521 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { actions, isInputError } from 'astro:actions';
+import { getUpcomingRecruitmentEvents } from '@/lib/sanity';
+import RecruitmentCalendar from '@/components/sections/RecruitmentCalendar';
+
+export const prerender = false;
+
+const result = Astro.getActionResult(actions.candidature);
+const inputErrors = isInputError(result?.error) ? result.error.fields : {};
+const submitted = result?.data?.ok === true;
+
+const recruitmentEvents = await getUpcomingRecruitmentEvents();
+const today = new Date();
+const initialYear = today.getFullYear();
+const initialMonth = today.getMonth();
+---
+
+<Layout
+  title="Recrutement — LSPD"
+  description="Déposez votre dossier de candidature officiel auprès du Los Santos Police Department."
+>
+
+  <!-- ═══════════════════════════ EN-TÊTE ══════════════════════════════════ -->
+  <section class="bg-lspd-navy-deep border-b border-lspd-gold/20 py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      <nav class="flex items-center gap-2 mb-10" aria-label="Fil d'Ariane">
+        <a href="/" class="text-[10px] font-mono tracking-widest uppercase text-white/35 hover:text-white/65 transition-colors">Accueil</a>
+        <span class="text-white/20 text-[10px] mx-1">›</span>
+        <span class="text-[10px] font-mono tracking-widest uppercase text-lspd-gold/75">Recrutement</span>
+      </nav>
+
+      <div class="flex items-start gap-8">
+        <div class="shrink-0 hidden sm:flex w-14 h-14 border border-lspd-gold/30 items-center justify-center" style="border-radius: var(--radius-sm)">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c9a961" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-3 opacity-70">
+            Bureau des Ressources Humaines
+          </p>
+          <h1 class="font-display font-semibold text-white leading-none" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+            Recrutement
+          </h1>
+          <p class="mt-4 text-white/45 text-sm max-w-2xl leading-relaxed">
+            Le Los Santos Police Department examine les candidatures des citoyens souhaitant
+            intégrer ses rangs. Chaque dossier fait l'objet d'un examen rigoureux par le
+            service des ressources humaines avant tout entretien.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ CALENDRIER ══════════════════════════════ -->
+  <section id="calendrier" class="bg-bg border-b border-lspd-gold/15 py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      <div class="mb-8" data-anim="fade-up">
+        <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-1">
+          Sessions à venir
+        </p>
+        <h2 class="font-display text-2xl font-semibold text-text">
+          Calendrier de recrutement
+        </h2>
+        <div class="mt-2 w-10 h-px bg-lspd-gold/40"></div>
+        <p class="mt-3 text-text-muted text-sm max-w-2xl leading-relaxed">
+          Le Bureau des Ressources Humaines organise des sessions de recrutement régulières.
+          Consultez les prochaines dates ci-dessous et soumettez votre candidature avant la session.
+        </p>
+      </div>
+
+      {recruitmentEvents.length === 0 ? (
+        <div class="border border-border bg-surface p-10 text-center" style="border-radius: var(--radius-md)">
+          <p class="text-[10px] font-mono tracking-[0.25em] uppercase text-text-subtle mb-2">
+            Aucune session planifiée
+          </p>
+          <p class="text-text-muted text-sm">
+            Aucune session de recrutement n'est actuellement programmée.
+            Revenez consulter cette page prochainement.
+          </p>
+        </div>
+      ) : (
+        <RecruitmentCalendar
+          client:visible
+          events={recruitmentEvents}
+          initialYear={initialYear}
+          initialMonth={initialMonth}
+        />
+      )}
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ CONDITIONS ═══════════════════════════════ -->
+  <section id="conditions" class="bg-lspd-navy border-b border-lspd-gold/15 py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex flex-col lg:flex-row gap-10">
+
+        <div class="shrink-0" data-anim="fade-up">
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-1">Prérequis</p>
+          <h2 class="font-display text-2xl font-semibold text-white">Conditions requises</h2>
+          <div class="mt-2 w-10 h-px bg-lspd-gold/40"></div>
+        </div>
+
+        <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1" data-anim="stagger">
+          {[
+            { icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2', label: 'Être âgé de 18 ans minimum' },
+            { icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 0 0 1.946-.806 3.42 3.42 0 0 1 4.438 0 3.42 3.42 0 0 0 1.946.806 3.42 3.42 0 0 1 3.138 3.138 3.42 3.42 0 0 0 .806 1.946 3.42 3.42 0 0 1 0 4.438 3.42 3.42 0 0 0-.806 1.946 3.42 3.42 0 0 1-3.138 3.138 3.42 3.42 0 0 0-1.946.806 3.42 3.42 0 0 1-4.438 0 3.42 3.42 0 0 0-1.946-.806 3.42 3.42 0 0 1-3.138-3.138 3.42 3.42 0 0 0-.806-1.946 3.42 3.42 0 0 1 0-4.438 3.42 3.42 0 0 0 .806-1.946 3.42 3.42 0 0 1 3.138-3.138z', label: 'Casier judiciaire vierge (IC)' },
+            { icon: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z', label: 'Maîtrise correcte du français' },
+            { icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', label: 'Être joueur actif sur lsh-rp' },
+            { icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', label: 'Respect du règlement du département' },
+            { icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', label: 'Esprit d\'équipe et sens du service' },
+          ].map(req => (
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a961" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+                  <path d={req.icon}/>
+                </svg>
+              </span>
+              <span class="text-white/55 text-sm leading-snug">{req.label}</span>
+            </li>
+          ))}
+        </ul>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FORMULAIRE ═══════════════════════════════ -->
+  <section class="bg-bg py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      {submitted ? (
+        <!-- Confirmation -->
+        <div class="max-w-3xl mx-auto">
+          <div class="bg-surface border border-border p-12 text-center relative">
+            <div class="absolute top-4 left-4 w-6 h-6 border-t border-l border-lspd-gold/35"></div>
+            <div class="absolute top-4 right-4 w-6 h-6 border-t border-r border-lspd-gold/35"></div>
+            <div class="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-lspd-gold/35"></div>
+            <div class="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-lspd-gold/35"></div>
+
+            <div class="w-12 h-12 border border-success/30 bg-success/5 flex items-center justify-center mx-auto mb-6" style="border-radius: var(--radius-sm)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+
+            <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-4 opacity-75">
+              Dossier transmis
+            </p>
+            <h2 class="font-display text-3xl font-semibold text-text mb-4">
+              Candidature enregistrée
+            </h2>
+            <div class="w-10 h-px bg-lspd-gold mx-auto mb-5"></div>
+            <p class="text-text-muted text-sm leading-relaxed max-w-md mx-auto mb-8">
+              Votre dossier de candidature a bien été transmis au Bureau des Ressources Humaines
+              du LSPD. Le département prendra contact avec vous dans les plus brefs délais via Discord.
+            </p>
+            <a
+              href="/"
+              class="inline-flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-text-subtle hover:text-lspd-navy transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+              Retour à l'accueil
+            </a>
+          </div>
+        </div>
+      ) : (
+        <!-- Formulaire -->
+        <div>
+
+          <!-- En-tête de section -->
+          <div class="mb-8" data-anim="fade-up">
+            <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-1">
+              Document officiel
+            </p>
+            <h2 class="font-display text-2xl font-semibold text-text">
+              Dossier de candidature
+            </h2>
+            <div class="mt-2 w-10 h-px bg-lspd-gold/40"></div>
+            <p class="mt-3 text-text-muted text-sm max-w-2xl leading-relaxed">
+              Complétez l'intégralité du formulaire ci-dessous. Toute candidature incomplète
+              sera rejetée sans examen. Les champs marqués d'un astérisque sont obligatoires.
+            </p>
+          </div>
+
+          <div class="grid lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px] gap-10 xl:gap-14 items-start">
+            <div>
+
+          {result?.error && !isInputError(result.error) && (
+            <div class="mb-8 px-5 py-4 border border-danger/30 bg-danger/5 flex items-start gap-3" style="border-radius: var(--radius-sm)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="1.5" stroke-linecap="round" class="shrink-0 mt-0.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <p class="text-danger text-sm">
+                Une erreur est survenue lors de la transmission de votre dossier. Veuillez réessayer ultérieurement.
+              </p>
+            </div>
+          )}
+
+          <form
+            method="POST"
+            action={actions.candidature}
+            class="bg-surface border border-border p-8 md:p-10 space-y-8"
+            style="border-radius: var(--radius-md)"
+          >
+
+            <!-- Séparateur section identité -->
+            <div class="flex items-center gap-4">
+              <span class="text-[10px] font-mono tracking-[0.25em] uppercase text-text-subtle shrink-0">I. Identité</span>
+              <div class="flex-1 h-px bg-border"></div>
+            </div>
+
+            <!-- Nom & Prénom -->
+            <div class="grid sm:grid-cols-2 gap-6">
+
+              <div>
+                <label for="nom" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                  Nom de famille <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="nom"
+                  name="nom"
+                  required
+                  autocomplete="family-name"
+                  aria-describedby={inputErrors.nom ? 'nom-error' : undefined}
+                  class={`w-full px-4 py-3 bg-bg border text-text text-sm font-mono focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.nom ? 'border-danger' : 'border-border'}`}
+                  style="border-radius: var(--radius-sm)"
+                />
+                {inputErrors.nom && (
+                  <p id="nom-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.nom}</p>
+                )}
+              </div>
+
+              <div>
+                <label for="prenom" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                  Prénom <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="prenom"
+                  name="prenom"
+                  required
+                  autocomplete="given-name"
+                  aria-describedby={inputErrors.prenom ? 'prenom-error' : undefined}
+                  class={`w-full px-4 py-3 bg-bg border text-text text-sm font-mono focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.prenom ? 'border-danger' : 'border-border'}`}
+                  style="border-radius: var(--radius-sm)"
+                />
+                {inputErrors.prenom && (
+                  <p id="prenom-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.prenom}</p>
+                )}
+              </div>
+
+            </div>
+
+            <!-- Âge -->
+            <div class="max-w-[180px]">
+              <label for="age" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                Âge <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="number"
+                id="age"
+                name="age"
+                min="18"
+                max="99"
+                required
+                aria-describedby={inputErrors.age ? 'age-error' : undefined}
+                class={`w-full px-4 py-3 bg-bg border text-text text-sm font-mono focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.age ? 'border-danger' : 'border-border'}`}
+                style="border-radius: var(--radius-sm)"
+              />
+              {inputErrors.age && (
+                <p id="age-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.age}</p>
+              )}
+            </div>
+
+            <!-- Séparateur section expérience -->
+            <div class="flex items-center gap-4 pt-2">
+              <span class="text-[10px] font-mono tracking-[0.25em] uppercase text-text-subtle shrink-0">II. Expérience</span>
+              <div class="flex-1 h-px bg-border"></div>
+            </div>
+
+            <!-- Expérience RP -->
+            <fieldset>
+              <legend class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-4">
+                Antécédents professionnels <span class="text-danger" aria-hidden="true">*</span>
+              </legend>
+              <div class="flex flex-wrap gap-6">
+                {(['non', 'oui'] as const).map(val => (
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="experience"
+                      value={val}
+                      id={`experience-${val}`}
+                      class="sr-only peer"
+                      checked={val === 'non'}
+                    />
+                    <span class="w-4 h-4 border border-border bg-bg flex items-center justify-center shrink-0 peer-checked:border-lspd-navy transition-colors" style="border-radius: 50%">
+                      <span class="w-2 h-2 bg-lspd-navy opacity-0 peer-checked:opacity-100 transition-opacity" style="border-radius: 50%"></span>
+                    </span>
+                    <span class="text-sm text-text-muted group-hover:text-text transition-colors capitalize font-mono">{val === 'oui' ? 'Oui' : 'Non'}</span>
+                  </label>
+                ))}
+              </div>
+              {inputErrors.experience && (
+                <p class="mt-2 text-[11px] text-danger font-mono">{inputErrors.experience}</p>
+              )}
+            </fieldset>
+
+            <!-- Détail expériences (conditionnel) -->
+            <div id="experience-details" hidden>
+              <label for="experienceDetails" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                Précisez vos expériences <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <p class="text-[11px] text-text-subtle mb-3 leading-relaxed">
+                Indiquez les serveurs, factions ou postes occupés ainsi que la durée approximative.
+              </p>
+              <textarea
+                id="experienceDetails"
+                name="experienceDetails"
+                rows="4"
+                aria-describedby={inputErrors.experienceDetails ? 'expdetails-error' : undefined}
+                class={`w-full px-4 py-3 bg-bg border text-text text-sm leading-relaxed resize-y focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.experienceDetails ? 'border-danger' : 'border-border'}`}
+                style="border-radius: var(--radius-sm); min-height: 100px;"
+              ></textarea>
+              {inputErrors.experienceDetails && (
+                <p id="expdetails-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.experienceDetails}</p>
+              )}
+            </div>
+
+            <!-- Séparateur section motivation -->
+            <div class="flex items-center gap-4 pt-2">
+              <span class="text-[10px] font-mono tracking-[0.25em] uppercase text-text-subtle shrink-0">III. Motivation</span>
+              <div class="flex-1 h-px bg-border"></div>
+            </div>
+
+            <!-- Lettre de motivation -->
+            <div>
+              <label for="motivation" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                Lettre de motivation <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <p class="text-[11px] text-text-subtle mb-3 leading-relaxed">
+                Expliquez en détail les raisons qui vous poussent à rejoindre le LSPD.
+                Soyez précis et personnel. Minimum 80 caractères.
+              </p>
+              <textarea
+                id="motivation"
+                name="motivation"
+                rows="8"
+                required
+                aria-describedby={inputErrors.motivation ? 'motivation-error' : undefined}
+                class={`w-full px-4 py-3 bg-bg border text-text text-sm leading-relaxed resize-y focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.motivation ? 'border-danger' : 'border-border'}`}
+                style="border-radius: var(--radius-sm); min-height: 160px;"
+              ></textarea>
+              {inputErrors.motivation && (
+                <p id="motivation-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.motivation}</p>
+              )}
+            </div>
+
+            <!-- Objectifs -->
+            <div>
+              <label for="objectifs" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                Objectifs au sein du LSPD <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <p class="text-[11px] text-text-subtle mb-3 leading-relaxed">
+                Décrivez ce que vous souhaitez apporter au département et vos ambitions à long terme.
+                Minimum 40 caractères.
+              </p>
+              <textarea
+                id="objectifs"
+                name="objectifs"
+                rows="5"
+                required
+                aria-describedby={inputErrors.objectifs ? 'objectifs-error' : undefined}
+                class={`w-full px-4 py-3 bg-bg border text-text text-sm leading-relaxed resize-y focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.objectifs ? 'border-danger' : 'border-border'}`}
+                style="border-radius: var(--radius-sm); min-height: 120px;"
+              ></textarea>
+              {inputErrors.objectifs && (
+                <p id="objectifs-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.objectifs}</p>
+              )}
+            </div>
+
+            <!-- Pied de formulaire -->
+            <div class="pt-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <p class="text-[10px] text-text-subtle leading-relaxed max-w-sm">
+                En soumettant ce dossier, vous certifiez l'exactitude des informations fournies.
+                Toute fausse déclaration entraîne le rejet définitif de la candidature.
+              </p>
+              <button
+                type="submit"
+                class="shrink-0 inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-lspd-navy text-white text-xs font-semibold tracking-[0.2em] uppercase hover:bg-lspd-navy-deep transition-colors duration-200"
+                style="border-radius: var(--radius-sm)"
+              >
+                Soumettre le dossier
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </div>
+
+          </form>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="space-y-5" data-anim="fade-up">
+
+              <!-- Processus de sélection -->
+              <div class="border border-lspd-gold/20 bg-lspd-navy p-6" style="border-radius: var(--radius-md)">
+                <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-1">Processus</p>
+                <h3 class="font-display text-xl font-semibold text-white">Étapes de sélection</h3>
+                <div class="mt-2 w-8 h-px bg-lspd-gold/40 mb-5"></div>
+                <ol class="space-y-4">
+                  <li class="flex gap-3">
+                    <span class="shrink-0 w-5 h-5 border border-lspd-gold/30 text-lspd-gold text-[10px] font-mono flex items-center justify-center mt-0.5" style="border-radius: var(--radius-sm)">1</span>
+                    <div>
+                      <p class="text-sm font-medium text-white leading-snug">Dépôt du dossier</p>
+                      <p class="text-xs text-white/55 leading-relaxed mt-0.5">Soumission du formulaire en ligne avec toutes les pièces requises.</p>
+                    </div>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="shrink-0 w-5 h-5 border border-lspd-gold/30 text-lspd-gold text-[10px] font-mono flex items-center justify-center mt-0.5" style="border-radius: var(--radius-sm)">2</span>
+                    <div>
+                      <p class="text-sm font-medium text-white leading-snug">Examen du dossier</p>
+                      <p class="text-xs text-white/55 leading-relaxed mt-0.5">Étude de la candidature par un officier supérieur habilité sous 72 heures.</p>
+                    </div>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="shrink-0 w-5 h-5 border border-lspd-gold/30 text-lspd-gold text-[10px] font-mono flex items-center justify-center mt-0.5" style="border-radius: var(--radius-sm)">3</span>
+                    <div>
+                      <p class="text-sm font-medium text-white leading-snug">Académie de police</p>
+                      <p class="text-xs text-white/55 leading-relaxed mt-0.5">Si retenu, intégration au programme de formation de l'Académie du LSPD.</p>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+
+              <!-- CTA Académie -->
+              <div class="border border-lspd-gold/30 bg-lspd-navy-deep overflow-hidden" style="border-radius: var(--radius-md)">
+                <div class="px-6 pt-5 pb-4 border-b border-lspd-gold/20">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a961" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                    <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase opacity-80">
+                      Étape suivante
+                    </p>
+                  </div>
+                  <h3 class="font-display text-xl font-semibold text-white mt-2">
+                    Académie de Police
+                  </h3>
+                  <div class="mt-1.5 w-8 h-px bg-lspd-gold/40"></div>
+                </div>
+                <div class="px-6 py-4">
+                  <p class="text-white/60 text-xs leading-relaxed mb-5">
+                    Si votre dossier est retenu, vous serez convoqué à l'Académie du LSPD.
+                    Prenez connaissance du programme de formation et du règlement intérieur
+                    avant votre intégration.
+                  </p>
+                  <a
+                    href="/academie"
+                    class="group flex items-center justify-between w-full px-4 py-3 bg-lspd-gold/10 border border-lspd-gold/30 hover:bg-lspd-gold/20 hover:border-lspd-gold/50 transition-colors"
+                    style="border-radius: var(--radius-sm)"
+                  >
+                    <span class="text-lspd-gold text-xs font-semibold tracking-[0.15em] uppercase">
+                      Consulter le guide
+                    </span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a961" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                      <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+
+            </aside>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+</Layout>
+
+<script>
+  const radios = document.querySelectorAll<HTMLInputElement>('[name="experience"]');
+  const detailsEl = document.getElementById('experience-details');
+
+  function syncDetails() {
+    const checked = document.querySelector<HTMLInputElement>('[name="experience"]:checked');
+    if (detailsEl) {
+      detailsEl.hidden = checked?.value !== 'oui';
+    }
+  }
+
+  radios.forEach(radio => radio.addEventListener('change', syncDetails));
+  syncDetails();
+
+  /* Radio visuel : synchronisation du pseudo-élément cercle */
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      radios.forEach(r => {
+        const dot = r.nextElementSibling?.querySelector('span');
+        if (dot) dot.style.opacity = r.checked ? '1' : '0';
+      });
+    });
+  });
+</script>

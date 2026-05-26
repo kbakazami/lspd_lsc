@@ -1,0 +1,283 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getAllRanks } from '@/lib/sanity';
+
+const ranksFromSanity = await getAllRanks();
+
+const mockRanks = [
+  {
+    _id: 'chief',
+    level: 11,
+    tier: 'direction' as const,
+    abbreviation: 'CHIEF',
+    name: 'Chief',
+    description: 'Officier en chef du département. Autorité suprême du LSPD, responsable de l\'ensemble des opérations, de la politique interne et de la représentation institutionnelle.',
+  },
+  {
+    _id: 'cmd',
+    level: 10,
+    tier: 'direction' as const,
+    abbreviation: 'CMD',
+    name: 'Commandant',
+    description: 'Second de l\'officier en chef. Coordonne les commandements opérationnels et administratifs, assure l\'intérim en l\'absence du Chief.',
+  },
+  {
+    _id: 'cpt',
+    level: 9,
+    tier: 'commandStaff' as const,
+    abbreviation: 'CPT',
+    name: 'Capitaine',
+    description: 'Dirige une division ou un secteur opérationnel. Membre du commandement supérieur, garant de la stratégie et de la discipline de son unité.',
+  },
+  {
+    _id: 'lt',
+    level: 8,
+    tier: 'commandStaff' as const,
+    abbreviation: 'LT',
+    name: 'Lieutenant',
+    description: 'Officier supérieur appartenant au Command Staff. Encadre les sergents et coordonne les équipes sur le terrain.',
+  },
+  {
+    _id: 'sgt2',
+    level: 7,
+    tier: 'supervision' as const,
+    abbreviation: 'SGT II',
+    name: 'Sergent II',
+    description: 'Sous-officier expérimenté, également désigné Warrant Officer. Supervise les unités de patrouille et peut prendre le commandement de scène.',
+  },
+  {
+    _id: 'sgt1',
+    level: 6,
+    tier: 'supervision' as const,
+    abbreviation: 'SGT I',
+    name: 'Sergent I',
+    description: 'Sous-officier responsable d\'une équipe. Peut être affecté à n\'importe quel bureau du département selon les besoins opérationnels.',
+  },
+  {
+    _id: 'slo',
+    level: 5,
+    tier: 'supervision' as const,
+    abbreviation: 'SLO',
+    name: 'Senior Lead Officer',
+    description: 'Officier de liaison senior. Dirige les officiers de son groupe et coordonne les opérations courantes sur le terrain.',
+  },
+  {
+    _id: 'off3',
+    level: 4,
+    tier: 'personnel' as const,
+    abbreviation: 'OFF III',
+    name: 'Officier III',
+    description: 'Officier confirmé. Peut accéder aux divisions spécialisées du département et encadrer les recrues sous supervision d\'un supérieur.',
+  },
+  {
+    _id: 'off2',
+    level: 3,
+    tier: 'personnel' as const,
+    abbreviation: 'OFF II',
+    name: 'Officier II',
+    description: 'Officier titulaire en cours de certification avancée. Éligible au statut de FTO (Field Training Officer) après évaluation.',
+  },
+  {
+    _id: 'off1',
+    level: 2,
+    tier: 'personnel' as const,
+    abbreviation: 'OFF I',
+    name: 'Officier I',
+    description: 'Agent en patrouille, équipé radio et autorisé à intervenir de manière autonome. Peut rejoindre des unités spécialisées sur invitation.',
+  },
+  {
+    _id: 'cadet',
+    level: 1,
+    tier: 'personnel' as const,
+    abbreviation: 'CDT',
+    name: 'Cadet',
+    description: 'Recrue en formation initiale. Patrouille exclusivement sous la supervision directe d\'un Officier tuteur jusqu\'à sa titularisation.',
+  },
+];
+
+const ranks = ranksFromSanity.length > 0 ? ranksFromSanity : mockRanks;
+
+const tiers = [
+  { id: 'direction',    label: 'Direction'              },
+  { id: 'commandStaff', label: 'Command Staff'          },
+  { id: 'supervision',  label: 'Supervision'            },
+  { id: 'personnel',    label: 'Personnel opérationnel' },
+] as const;
+
+const gradesByTier = tiers.map(tier => ({
+  ...tier,
+  grades: ranks.filter(r => r.tier === tier.id),
+}));
+---
+
+<Layout
+  title="Organigramme — LSPD"
+  description="Hiérarchie officielle du Los Santos Police Department : grades et fonctions du département."
+>
+
+  <!-- ═══════════════════════════ EN-TÊTE ══════════════════════════════════ -->
+  <section class="bg-lspd-navy-deep border-b border-lspd-gold/20 py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      <nav class="flex items-center gap-2 mb-10" aria-label="Fil d'Ariane">
+        <a href="/" class="text-[10px] font-mono tracking-widest uppercase text-white/35 hover:text-white/65 transition-colors">Accueil</a>
+        <span class="text-white/20 text-[10px] mx-1">›</span>
+        <span class="text-[10px] font-mono tracking-widest uppercase text-lspd-gold/75">Organigramme</span>
+      </nav>
+
+      <div class="flex items-start gap-8">
+        <div class="shrink-0 hidden sm:flex w-14 h-14 border border-lspd-gold/30 items-center justify-center" style="border-radius: var(--radius-sm)">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c9a961" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-3 opacity-70">
+            Structure institutionnelle
+          </p>
+          <h1 class="font-display font-semibold text-white leading-none" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+            Organigramme
+          </h1>
+          <p class="mt-4 text-white/45 text-sm max-w-2xl leading-relaxed">
+            Tableau officiel de la hiérarchie du Los Santos Police Department.
+            Chaque grade définit un périmètre de responsabilités et une autorité
+            de commandement au sein du département.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ TABLEAU DES GRADES ═══════════════════════════ -->
+  <section class="bg-bg py-20">
+    <div class="max-w-4xl mx-auto px-6 lg:px-8">
+
+      <!-- Titre de section -->
+      <div class="mb-10" data-anim="fade-up">
+        <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Ressources humaines</p>
+        <h2 class="font-display text-3xl font-semibold text-text">Grades & Fonctions</h2>
+        <div class="mt-3 w-12 h-px bg-lspd-gold"></div>
+      </div>
+
+      <!-- Document hiérarchique -->
+      <div class="border border-border overflow-hidden" style="border-radius: var(--radius-md)" data-anim="fade-up">
+
+        {gradesByTier.map((tier, tierIndex) => (
+          <div>
+
+            <!-- En-tête de tier -->
+            <div class={`flex items-center gap-4 px-5 py-2.5 border-b ${
+              tier.id === 'direction'
+                ? 'bg-lspd-navy border-lspd-gold/20'
+                : 'bg-bg border-border'
+            }`}>
+              <div class={`w-0.5 h-4 shrink-0 ${tier.id === 'direction' ? 'bg-lspd-gold' : 'bg-border'}`}></div>
+              <span class={`text-[9px] font-mono tracking-[0.35em] uppercase ${
+                tier.id === 'direction' ? 'text-lspd-gold' : 'text-text-subtle'
+              }`}>
+                {tier.label}
+              </span>
+              <div class={`flex-1 h-px ${tier.id === 'direction' ? 'bg-lspd-gold/15' : 'bg-border'}`}></div>
+            </div>
+
+            <!-- Lignes de grades -->
+            {tier.grades.map((grade, i) => (
+              <div class={`flex items-start gap-5 px-5 py-5 border-b transition-colors duration-150 last:border-b-0 ${
+                tier.id === 'direction'
+                  ? 'bg-lspd-navy border-lspd-gold/10 hover:bg-lspd-navy-deep'
+                  : 'bg-surface border-border hover:bg-bg'
+              }`}>
+
+                <!-- Badge / Sigle -->
+                <div class="shrink-0 flex flex-col items-center gap-1.5 w-12 mt-0.5">
+                  {grade.badge?.url ? (
+                    <img
+                      src={grade.badge.url}
+                      alt={`Insigne ${grade.name}`}
+                      width="48"
+                      height="48"
+                      class="w-12 h-12 object-contain"
+                    />
+                  ) : (
+                    <div class={`flex items-center justify-center h-8 w-full border ${
+                      tier.id === 'direction'
+                        ? 'border-lspd-gold/30 text-lspd-gold'
+                        : 'border-border text-text-subtle'
+                    }`} style="border-radius: var(--radius-sm)">
+                      <span class="font-mono text-[9px] tracking-widest uppercase">{grade.abbreviation}</span>
+                    </div>
+                  )}
+                  {grade.badge?.url && (
+                    <span class={`font-mono text-[9px] tracking-widest uppercase text-center leading-tight ${
+                      tier.id === 'direction' ? 'text-lspd-gold/50' : 'text-text-subtle'
+                    }`}>
+                      {grade.abbreviation}
+                    </span>
+                  )}
+                </div>
+
+                <!-- Nom + description -->
+                <div class="flex-1 min-w-0">
+                  <h3 class={`font-display font-semibold leading-snug ${
+                    tier.id === 'direction' ? 'text-white text-lg' : 'text-text text-base'
+                  }`}>
+                    {grade.name}
+                  </h3>
+                  {grade.description && (
+                    <p class={`text-xs leading-relaxed mt-1 ${
+                      tier.id === 'direction' ? 'text-white/40' : 'text-text-muted'
+                    }`}>
+                      {grade.description}
+                    </p>
+                  )}
+                </div>
+
+              </div>
+            ))}
+
+            <!-- Connecteur entre tiers -->
+            {tierIndex < gradesByTier.length - 1 && (
+              <div class="flex justify-center items-center py-2 bg-bg border-b border-border">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-border">
+                  <path d="M12 5v14M5 12l7 7 7-7"/>
+                </svg>
+              </div>
+            )}
+
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ CTA ══════════════════════════════════════ -->
+  <section class="bg-lspd-navy py-16 relative overflow-hidden">
+    <div
+      class="absolute inset-0 opacity-[0.025]"
+      style="background-image: repeating-linear-gradient(0deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 44px), repeating-linear-gradient(90deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 44px);"
+    ></div>
+    <div class="relative max-w-3xl mx-auto px-6 lg:px-8 text-center" data-anim="fade-up">
+      <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-6 opacity-75">
+        Intégrer le département
+      </p>
+      <h2 class="font-display font-semibold text-white mb-4" style="font-size: clamp(1.6rem, 4vw, 2.4rem);">
+        Vous souhaitez rejoindre nos rangs ?
+      </h2>
+      <p class="text-white/45 text-sm leading-relaxed mb-8 max-w-lg mx-auto">
+        Toute candidature est examinée par le Bureau des Ressources Humaines.
+        Les dossiers sont ouverts aux citoyens remplissant les conditions requises.
+      </p>
+      <a
+        href="/recrutement"
+        class="inline-flex items-center justify-center px-9 py-4 bg-lspd-gold text-lspd-navy text-xs font-semibold tracking-[0.2em] uppercase hover:bg-lspd-gold-bright transition-colors duration-200"
+        style="border-radius: var(--radius-sm)"
+      >
+        Déposer ma candidature
+      </a>
+    </div>
+  </section>
+
+</Layout>

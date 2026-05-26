@@ -1,11 +1,336 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import Layout from '@/layouts/Layout.astro';
+import { getAllPosts, getAllDivisions } from '@/lib/sanity';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const [allPosts, divisions] = await Promise.all([getAllPosts(), getAllDivisions()]);
+
+const latestPosts = allPosts.slice(0, 3);
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+  title="Los Santos Police Department"
+  description="Site officiel du LSPD — Protéger et servir la population de Los Santos."
+>
+
+  <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+  <section
+    class="relative bg-lspd-navy-deep overflow-hidden"
+    style="min-height: calc(100vh - 72px);"
+  >
+    <!-- Motif géométrique de fond -->
+    <div
+      class="absolute inset-0 opacity-[0.035]"
+      style="background-image: repeating-linear-gradient(45deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 22px); background-size: 22px 22px;"
+    ></div>
+
+    <!-- Lignes verticales décoratives -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-20 bg-gradient-to-b from-transparent to-lspd-gold/30"></div>
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-20 bg-gradient-to-t from-transparent to-lspd-gold/30"></div>
+
+    <div
+      class="relative flex flex-col items-center justify-center text-center px-6 py-28"
+      style="min-height: calc(100vh - 72px);"
+    >
+      <!-- Badge LSPD -->
+      <div class="mb-10" data-hero="badge">
+        <svg viewBox="0 0 120 144" class="w-28 h-32 mx-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 4L116 28L116 88Q116 126 60 140Q4 126 4 88L4 28Z" fill="#0b1e3f" stroke="#c9a961" stroke-width="2"/>
+          <path d="M60 16L104 38L104 88Q104 116 60 128Q16 116 16 88L16 38Z" fill="none" stroke="#c9a961" stroke-width="0.75" opacity="0.4"/>
+          <path d="M60 30L92 46L92 87Q92 108 60 118Q28 108 28 87L28 46Z" fill="none" stroke="#c9a961" stroke-width="0.4" opacity="0.2"/>
+          <!-- Étoile 5 branches -->
+          <polygon
+            points="60,46 63,55 72,55 65,61 68,70 60,64 52,70 55,61 48,55 57,55"
+            fill="#c9a961"
+          />
+          <!-- Séparateur -->
+          <line x1="38" y1="80" x2="82" y2="80" stroke="#c9a961" stroke-width="0.75" opacity="0.5"/>
+          <!-- Texte LSPD -->
+          <text x="60" y="98" text-anchor="middle" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#c9a961" letter-spacing="3.5">LSPD</text>
+          <!-- Sous-texte -->
+          <text x="60" y="114" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" fill="#c9a961" opacity="0.6" letter-spacing="2.5">LOS SANTOS</text>
+        </svg>
+      </div>
+
+      <!-- Sur-titre -->
+      <p class="text-lspd-gold text-[11px] font-mono tracking-[0.45em] uppercase mb-5 opacity-70" data-hero="1">
+        Département de Police — Los Santos
+      </p>
+
+      <!-- Titre principal -->
+      <h1 class="font-display font-semibold text-white leading-none tracking-wide mb-7" style="font-size: clamp(2.5rem, 7vw, 5rem);" data-hero="2">
+        Los Santos<br/>
+        <em class="not-italic text-lspd-gold">Police Department</em>
+      </h1>
+
+      <!-- Séparateur doré -->
+      <div class="flex items-center gap-4 mb-7 w-full max-w-xs" data-hero="3">
+        <div class="flex-1 h-px bg-lspd-gold/30"></div>
+        <div class="w-1.5 h-1.5 rotate-45 bg-lspd-gold/50 shrink-0"></div>
+        <div class="flex-1 h-px bg-lspd-gold/30"></div>
+      </div>
+
+      <!-- Devise -->
+      <p class="font-display italic text-white/55 text-xl md:text-2xl tracking-wide mb-14" data-hero="4">
+        « Protéger et servir »
+      </p>
+
+      <!-- CTA -->
+      <div class="flex flex-col sm:flex-row items-center gap-4" data-hero="5">
+        <a
+          href="/recrutement"
+          class="inline-flex items-center justify-center px-8 py-4 bg-lspd-gold text-lspd-navy text-xs font-semibold tracking-[0.2em] uppercase hover:bg-lspd-gold-bright transition-colors duration-200 min-w-[220px]"
+          style="border-radius: var(--radius-sm)"
+        >
+          Déposer ma candidature
+        </a>
+        <a
+          href="/actualites"
+          class="inline-flex items-center justify-center px-8 py-4 border border-white/25 text-white/70 text-xs font-medium tracking-[0.2em] uppercase hover:border-white/50 hover:text-white transition-colors duration-200 min-w-[220px]"
+          style="border-radius: var(--radius-sm)"
+        >
+          Communiqués de presse
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ ACTUALITÉS ═══════════════════════════════ -->
+  <section class="bg-bg py-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      <div class="flex items-end justify-between mb-14" data-anim="fade-up">
+        <div>
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Communiqués</p>
+          <h2 class="font-display text-4xl font-semibold text-text">Dernières Actualités</h2>
+          <div class="mt-3 w-14 h-px bg-lspd-gold"></div>
+        </div>
+        <a
+          href="/actualites"
+          class="hidden sm:inline-flex items-center gap-2 text-sm text-text-muted hover:text-text transition-colors group"
+        >
+          Toutes les actualités
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="group-hover:translate-x-0.5 transition-transform">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      {latestPosts.length === 0 ? (
+        <p class="text-text-muted text-sm text-center py-12">Aucun communiqué publié pour le moment.</p>
+      ) : (
+        <div class="grid md:grid-cols-3 gap-7" data-anim="stagger">
+          {latestPosts.map(article => (
+            <article class="bg-surface border border-border group hover:border-lspd-gold/35 transition-colors duration-300 flex flex-col overflow-hidden">
+              <!-- Image de couverture -->
+              {article.coverImage?.url && (
+                <div class="relative h-44 overflow-hidden bg-lspd-navy/10">
+                  <Image
+                    src={article.coverImage.url}
+                    alt={article.coverImage.alt ?? article.title}
+                    width={640}
+                    height={176}
+                    class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-lspd-navy/30 to-transparent"></div>
+                </div>
+              )}
+              <!-- En-tête de la carte -->
+              <div class="flex items-center justify-between px-6 py-3 border-b border-border bg-bg/50">
+                <span class="text-[10px] font-mono tracking-widest uppercase text-text-muted">
+                  {article.tags?.[0] ?? 'Communiqué'}
+                </span>
+                <time class="text-[10px] font-mono text-text-subtle" datetime={article.publishedAt}>
+                  {formatDate(article.publishedAt)}
+                </time>
+              </div>
+              <!-- Corps -->
+              <div class="p-6 flex flex-col flex-1">
+                <h3 class="font-display text-xl font-semibold text-text leading-snug mb-3">
+                  {article.title}
+                </h3>
+                <p class="text-text-muted text-sm leading-relaxed flex-1 mb-6">
+                  {article.excerpt}
+                </p>
+                <div class="border-t border-border pt-4">
+                  <a
+                    href={`/actualites/${article.slug.current}`}
+                    class="inline-flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-text-subtle hover:text-lspd-navy transition-colors group/lnk"
+                  >
+                    Consulter le communiqué
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="group-hover/lnk:translate-x-0.5 transition-transform">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              <!-- Barre dorée au survol -->
+              <div class="h-0.5 bg-lspd-gold origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      <div class="mt-7 sm:hidden text-center">
+        <a href="/actualites" class="text-sm text-text-muted hover:text-text transition-colors">
+          Voir tous les communiqués →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ MISSION ══════════════════════════════════ -->
+  <section class="bg-lspd-navy py-24 relative overflow-hidden">
+    <!-- Grille de fond subtile -->
+    <div
+      class="absolute inset-0 opacity-[0.025]"
+      style="background-image: repeating-linear-gradient(0deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 44px), repeating-linear-gradient(90deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 44px);"
+    ></div>
+
+    <div class="relative max-w-3xl mx-auto px-6 lg:px-8 text-center">
+      <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-8 opacity-75" data-anim="fade-in">Notre mission</p>
+      <blockquote class="font-display italic text-white/80 leading-relaxed mb-8" style="font-size: clamp(1.1rem, 2.5vw, 1.4rem);" data-anim="fade-up">
+        « Le Los Santos Police Department a pour vocation de protéger les vies et les biens de l'ensemble des citoyens du comté de Los Santos, de prévenir la criminalité et de faire respecter les lois de l'État de San Andreas avec rigueur, impartialité et sens du service public. »
+      </blockquote>
+      <div class="flex items-center justify-center gap-5" data-anim="fade-in">
+        <div class="w-10 h-px bg-lspd-gold/35"></div>
+        <p class="text-white/35 text-[10px] font-mono tracking-[0.25em] uppercase">
+          Commissaire Général — LSPD
+        </p>
+        <div class="w-10 h-px bg-lspd-gold/35"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ DIVISIONS ════════════════════════════════ -->
+  <section class="bg-surface py-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      <div class="text-center mb-16" data-anim="fade-up">
+        <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Organisation</p>
+        <h2 class="font-display text-4xl font-semibold text-text">Nos Divisions</h2>
+        <div class="mt-3 mx-auto w-14 h-px bg-lspd-gold"></div>
+        <p class="mt-5 text-text-muted text-sm max-w-md mx-auto leading-relaxed">
+          Le LSPD s'appuie sur des unités spécialisées pour répondre à l'ensemble des situations rencontrées sur le terrain de Los Santos.
+        </p>
+      </div>
+
+      {divisions.length === 0 ? (
+        <p class="text-text-muted text-sm text-center py-12">Aucune division enregistrée pour le moment.</p>
+      ) : (
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" data-anim="stagger">
+          {divisions.map(div => (
+            <a
+              href={`/divisions/${div.slug.current}`}
+              class="border border-border group hover:border-lspd-gold/45 transition-all duration-300 flex flex-col overflow-hidden"
+              style="border-radius: var(--radius-md)"
+            >
+              <!-- Image ou fallback navy -->
+              <div class="relative h-40 shrink-0 overflow-hidden">
+                {div.coverImage?.url ? (
+                  <img
+                    src={`${div.coverImage.url}?w=480&auto=format`}
+                    alt=""
+                    aria-hidden="true"
+                    class="w-full h-full object-contain bg-lspd-navy group-hover:scale-[1.03] transition-transform duration-500"
+                  />
+                ) : (
+                  <div class="w-full h-full bg-lspd-navy flex items-center justify-center">
+                    <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(45deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 22px); background-size: 22px 22px;"></div>
+                    <span class="relative font-display text-3xl font-semibold text-lspd-gold/20 tracking-widest select-none">{div.abbreviation}</span>
+                  </div>
+                )}
+                <div class="absolute inset-0 bg-gradient-to-t from-lspd-navy/50 to-transparent pointer-events-none"></div>
+              </div>
+              <!-- Contenu sur fond solide -->
+              <div class="p-5 flex flex-col flex-1 bg-surface">
+                <div
+                  class="inline-flex items-center self-start px-2 h-7 border border-lspd-gold/30 mb-4 group-hover:border-lspd-gold/60 transition-colors shrink-0"
+                  style="border-radius: var(--radius-sm)"
+                >
+                  <span class="text-lspd-gold font-mono text-[10px] font-semibold tracking-wide whitespace-nowrap">{div.abbreviation}</span>
+                </div>
+                <h3 class="font-display text-lg font-semibold text-text leading-snug mb-1">{div.name}</h3>
+                <p class="text-text-muted text-sm leading-relaxed flex-1 mb-4">{div.excerpt}</p>
+                <div class="flex items-center gap-2 text-[10px] font-mono text-text-subtle">
+                  <span>{div.memberCount} membre{div.memberCount > 1 ? 's' : ''}</span>
+                  {div.minRankLevel && <><span class="text-border">·</span><span>Niv. {div.minRankLevel} min.</span></>}
+                </div>
+              </div>
+              <!-- Barre dorée au survol -->
+              <div class="h-0.5 bg-lspd-gold origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 shrink-0"></div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div class="mt-10 text-center" data-anim="fade-up">
+        <a
+          href="/divisions"
+          class="inline-flex items-center gap-2.5 px-7 py-3.5 border border-border text-sm text-text-muted hover:border-lspd-gold/40 hover:text-text transition-all duration-200"
+          style="border-radius: var(--radius-sm)"
+        >
+          Toutes les divisions
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ RECRUTEMENT CTA ══════════════════════════ -->
+  <section class="bg-lspd-navy-deep py-24">
+    <div class="max-w-3xl mx-auto px-6 lg:px-8">
+      <div class="border border-lspd-gold/22 p-12 md:p-16 text-center relative" data-anim="fade-up">
+
+        <!-- Coins décoratifs -->
+        <div class="absolute top-4 left-4 w-7 h-7 border-t border-l border-lspd-gold/40"></div>
+        <div class="absolute top-4 right-4 w-7 h-7 border-t border-r border-lspd-gold/40"></div>
+        <div class="absolute bottom-4 left-4 w-7 h-7 border-b border-l border-lspd-gold/40"></div>
+        <div class="absolute bottom-4 right-4 w-7 h-7 border-b border-r border-lspd-gold/40"></div>
+
+        <p class="text-lspd-gold text-[10px] font-mono tracking-[0.4em] uppercase mb-5 opacity-75">Ressources humaines</p>
+        <h2 class="font-display font-semibold text-white leading-none mb-6" style="font-size: clamp(2rem, 5vw, 3rem);">
+          Le LSPD recrute
+        </h2>
+
+        <div class="flex items-center justify-center gap-4 mb-7">
+          <div class="w-10 h-px bg-lspd-gold/35"></div>
+          <div class="w-1.5 h-1.5 rotate-45 bg-lspd-gold/55 shrink-0"></div>
+          <div class="w-10 h-px bg-lspd-gold/35"></div>
+        </div>
+
+        <p class="text-white/50 text-sm leading-relaxed max-w-lg mx-auto mb-10">
+          Le Département de Police de Los Santos ouvre ses dossiers de candidature aux citoyens souhaitant servir leur communauté. Rejoignez une institution au service de la justice, de l'ordre et de la sécurité publique.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="/recrutement"
+            class="inline-flex items-center justify-center px-10 py-4 bg-lspd-gold text-lspd-navy text-xs font-semibold tracking-[0.2em] uppercase hover:bg-lspd-gold-bright transition-colors duration-200 min-w-[220px]"
+            style="border-radius: var(--radius-sm)"
+          >
+            Déposer ma candidature
+          </a>
+          <a
+            href="/recrutement#calendrier"
+            class="inline-flex items-center justify-center px-10 py-4 border border-white/20 text-white/65 text-xs font-medium tracking-[0.18em] uppercase hover:border-white/40 hover:text-white transition-colors duration-200 min-w-[220px]"
+            style="border-radius: var(--radius-sm)"
+          >
+            Sessions à venir
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </Layout>

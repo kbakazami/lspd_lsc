@@ -1,0 +1,315 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import { getDivisionBySlug, type SanityBodyContent, type SanityBodyBlock, type SanityBodyImage } from '@/lib/sanity';
+
+const isBlock = (b: SanityBodyContent): b is SanityBodyBlock => b._type === 'block';
+const isImage = (b: SanityBodyContent): b is SanityBodyImage => b._type === 'image';
+
+function blockToHtml(block: SanityBodyBlock): string {
+  return (block.children ?? [])
+    .map(span => {
+      let t = span.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      if (span.marks?.includes('strong')) t = `<strong>${t}</strong>`;
+      if (span.marks?.includes('em')) t = `<em>${t}</em>`;
+      return t;
+    })
+    .join('');
+}
+
+const rankLabels: Record<number, string> = {
+  1: 'Cadet',
+  2: 'Officier I',
+  3: 'Officier II',
+  4: 'Officier III',
+  5: 'Senior Lead Officer',
+  6: 'Sergent I',
+  7: 'Sergent II',
+  8: 'Lieutenant',
+  9: 'Capitaine',
+  10: 'Commandant',
+};
+
+const { slug } = Astro.params;
+const division = await getDivisionBySlug(slug as string);
+
+if (!division) return Astro.redirect('/divisions');
+
+const minRankLabel = division.minRankLevel !== undefined
+  ? (rankLabels[division.minRankLevel] ?? `Niveau ${division.minRankLevel}`)
+  : null;
+
+function initials(name: string): string {
+  return name.split(' ').map(n => n[0] ?? '').join('').slice(0, 2).toUpperCase();
+}
+---
+
+<Layout
+  title={`${division.name} — LSPD`}
+  description={division.excerpt ?? ''}
+>
+
+  <!-- ═══════════════════════════ EN-TÊTE ══════════════════════════════════ -->
+  <section class="bg-lspd-navy-deep relative overflow-hidden pt-10 pb-12 border-b border-lspd-gold/20">
+    <div
+      class="absolute inset-0 opacity-[0.03]"
+      style="background-image: repeating-linear-gradient(45deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 22px); background-size: 22px 22px;"
+    ></div>
+
+
+    <div class="relative max-w-7xl mx-auto px-6 lg:px-8">
+
+      <nav class="flex items-center gap-2 mb-10" aria-label="Fil d'Ariane">
+        <a href="/" class="text-[10px] font-mono tracking-widest uppercase text-white/35 hover:text-white/65 transition-colors">Accueil</a>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-white/25 shrink-0">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <a href="/divisions" class="text-[10px] font-mono tracking-widest uppercase text-white/35 hover:text-white/65 transition-colors">Divisions</a>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-white/25 shrink-0">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <span class="text-[10px] font-mono tracking-widest uppercase text-lspd-gold/70">{division.abbreviation}</span>
+      </nav>
+
+      <div class="flex items-start gap-7">
+        <!-- Badge abbreviation -->
+        <div
+          class="shrink-0 hidden sm:flex w-16 h-16 border border-lspd-gold/40 items-center justify-center overflow-hidden"
+          style="border-radius: var(--radius-sm)"
+        >
+          <span class="text-lspd-gold font-mono text-[10px] font-semibold tracking-tight leading-none px-2 text-center">{division.abbreviation}</span>
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-3 opacity-70">
+            Unité spécialisée
+          </p>
+          <h1 class="font-display font-semibold text-white leading-none mb-4" style="font-size: clamp(2rem, 5vw, 3.2rem);">
+            {division.name}
+          </h1>
+
+          <!-- Métadonnées en ligne -->
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {division.lead && (
+              <div class="flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="text-[11px] font-mono text-white/50">
+                  {division.lead.rank} {division.lead.name}
+                </span>
+              </div>
+            )}
+            <div class="flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span class="text-[11px] font-mono text-white/50">
+                {division.memberCount} membre{division.memberCount > 1 ? 's' : ''}
+              </span>
+            </div>
+            {minRankLabel && (
+              <div class="flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <span class="text-[11px] font-mono text-white/50">Grade min. : {minRankLabel}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ DESCRIPTION ══════════════════════════════ -->
+  <section class="bg-bg py-16 md:py-20">
+    <div class="max-w-3xl mx-auto px-6 lg:px-8">
+
+      {division.coverImage?.url && (
+        <div class="relative overflow-hidden mb-14 border border-border/50" style="border-radius: var(--radius-md); height: clamp(220px, 40vh, 400px);" data-anim="fade-up">
+          <img
+            src={`${division.coverImage.url}?w=900&auto=format`}
+            alt={division.coverImage.alt ?? division.name}
+            width="900"
+            height="400"
+            class="w-full h-full object-contain bg-lspd-navy"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-lspd-navy-deep/40 to-transparent pointer-events-none"></div>
+          <div class="absolute bottom-4 right-4">
+            <span class="text-[9px] font-mono tracking-[0.25em] uppercase text-white/30">{division.abbreviation}</span>
+          </div>
+        </div>
+      )}
+
+      <div class="mb-10" data-anim="fade-up">
+        <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Présentation</p>
+        <h2 class="font-display text-2xl font-semibold text-text">Mission & attributions</h2>
+        <div class="mt-3 w-10 h-px bg-lspd-gold"></div>
+      </div>
+
+      {division.excerpt && (
+        <p class="font-display italic text-text text-lg leading-relaxed mb-8" data-anim="fade-up">
+          {division.excerpt}
+        </p>
+      )}
+
+      <div class="space-y-5" data-anim="fade-up">
+        {(division.body ?? []).map(block => {
+          if (isImage(block)) {
+            return block.url ? (
+              <figure class="my-6">
+                <img
+                  src={`${block.url}?w=800&auto=format`}
+                  alt={block.alt ?? ''}
+                  loading="lazy"
+                  class="w-full"
+                  style="border-radius: var(--radius-sm)"
+                />
+                {block.caption && (
+                  <figcaption class="text-center text-xs font-mono text-text-subtle mt-2">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ) : null;
+          }
+          if (isBlock(block)) {
+            const html = blockToHtml(block);
+            if (!html) return null;
+            if (block.style === 'h2') return (
+              <h2 class="font-display text-2xl font-semibold text-text pl-4 border-l-2 border-lspd-gold/55 mt-8 mb-4" set:html={html} />
+            );
+            if (block.style === 'h3') return (
+              <h3 class="font-display text-xl font-semibold text-text mt-6 mb-3" set:html={html} />
+            );
+            if (block.style === 'blockquote') return (
+              <blockquote class="pl-5 border-l-2 border-lspd-gold/45 my-6">
+                <p class="font-display italic text-text text-lg leading-relaxed" set:html={html} />
+              </blockquote>
+            );
+            return <p class="text-text text-base leading-relaxed" set:html={html} />;
+          }
+          return null;
+        })}
+      </div>
+
+      <!-- Fiche récapitulative -->
+      <div class="mt-12 border border-border overflow-hidden" style="border-radius: var(--radius-md)" data-anim="fade-up">
+        <div class="flex items-center gap-3 px-5 py-2.5 bg-lspd-navy border-b border-lspd-gold/20">
+          <div class="w-0.5 h-4 bg-lspd-gold shrink-0"></div>
+          <span class="text-[9px] font-mono tracking-[0.35em] uppercase text-lspd-gold">Informations réglementaires</span>
+        </div>
+
+        {division.lead && (
+          <div class="flex items-start gap-4 px-5 py-4 border-b border-border bg-surface">
+            <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Commandant</span>
+            <span class="text-sm text-text font-medium">{division.lead.rank} {division.lead.name}</span>
+          </div>
+        )}
+
+        <div class={`flex items-start gap-4 px-5 py-4 bg-surface${minRankLabel ? ' border-b border-border' : ''}`}>
+          <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Effectifs</span>
+          <span class="text-sm text-text font-medium">{division.memberCount} officier{division.memberCount > 1 ? 's' : ''} affecté{division.memberCount > 1 ? 's' : ''}</span>
+        </div>
+
+        {minRankLabel && (
+          <div class="flex items-start gap-4 px-5 py-4 bg-surface">
+            <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Grade minimum</span>
+            <span class="text-sm text-text font-medium">{minRankLabel}</span>
+          </div>
+        )}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ MEMBRES ══════════════════════════════════ -->
+  {(division.members ?? []).length > 0 && (
+    <section class="bg-surface border-t border-border py-16">
+      <div class="max-w-3xl mx-auto px-6 lg:px-8">
+
+        <div class="mb-8" data-anim="fade-up">
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Ressources humaines</p>
+          <h2 class="font-display text-2xl font-semibold text-text">Personnel de la division</h2>
+          <div class="mt-3 w-10 h-px bg-lspd-gold"></div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-3" data-anim="stagger">
+          {(division.members ?? []).map(member => (
+            <div class="flex items-center gap-4 px-5 py-4 border border-border bg-bg/50 hover:border-lspd-gold/30 transition-colors" style="border-radius: var(--radius-sm)">
+              {member.avatar?.url ? (
+                <img
+                  src={`${member.avatar.url}?w=80&h=80&fit=crop&auto=format`}
+                  alt={member.name}
+                  width="40"
+                  height="40"
+                  class="w-10 h-10 object-cover shrink-0"
+                  style="border-radius: var(--radius-sm)"
+                />
+              ) : (
+                <div
+                  class="w-10 h-10 border border-border flex items-center justify-center shrink-0 bg-surface"
+                  style="border-radius: var(--radius-sm)"
+                >
+                  <span class="text-[10px] font-mono text-text-subtle tracking-wider">
+                    {initials(member.name)}
+                  </span>
+                </div>
+              )}
+              <div class="min-w-0">
+                <p class="font-display font-semibold text-text text-base leading-tight truncate">{member.name}</p>
+                <p class="text-[10px] font-mono text-text-subtle mt-0.5">{member.rank}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  )}
+
+  <!-- ═══════════════════════════ CTA ══════════════════════════════════════ -->
+  <section class="bg-lspd-navy py-16 relative overflow-hidden">
+    <div
+      class="absolute inset-0 opacity-[0.025]"
+      style="background-image: repeating-linear-gradient(0deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 44px), repeating-linear-gradient(90deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 44px);"
+    ></div>
+    <div class="relative max-w-3xl mx-auto px-6 lg:px-8 text-center" data-anim="fade-up">
+      <p class="text-lspd-gold text-[10px] font-mono tracking-[0.35em] uppercase mb-6 opacity-75">
+        Intégrer le département
+      </p>
+      <h2 class="font-display font-semibold text-white mb-4" style="font-size: clamp(1.6rem, 4vw, 2.4rem);">
+        Vous souhaitez rejoindre nos rangs ?
+      </h2>
+      <p class="text-white/45 text-sm leading-relaxed mb-8 max-w-lg mx-auto">
+        Commencez par déposer votre dossier de candidature auprès du Bureau des Ressources Humaines.
+        {minRankLabel && (
+          <> L'accès à la division {division.abbreviation} est ouvert à partir du grade de {minRankLabel}.</>
+        )}
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a
+          href="/recrutement"
+          class="inline-flex items-center justify-center px-9 py-4 bg-lspd-gold text-lspd-navy text-xs font-semibold tracking-[0.2em] uppercase hover:bg-lspd-gold-bright transition-colors duration-200 min-w-[220px]"
+          style="border-radius: var(--radius-sm)"
+        >
+          Déposer ma candidature
+        </a>
+        <a
+          href="/divisions"
+          class="inline-flex items-center justify-center px-9 py-4 border border-white/20 text-white/65 text-xs font-medium tracking-[0.18em] uppercase hover:border-white/40 hover:text-white transition-colors duration-200 min-w-[220px]"
+          style="border-radius: var(--radius-sm)"
+        >
+          Toutes les divisions
+        </a>
+      </div>
+    </div>
+  </section>
+
+</Layout>

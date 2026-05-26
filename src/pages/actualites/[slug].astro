@@ -1,0 +1,262 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import { getPostBySlug, getAllPosts, type SanityBodyBlock, type SanityBodyImage, type SanityBodyContent } from '@/lib/sanity';
+
+const { slug } = Astro.params;
+const [post, allPosts] = await Promise.all([
+  getPostBySlug(slug as string),
+  getAllPosts(),
+]);
+
+if (!post) return Astro.redirect('/actualites');
+
+const related = allPosts.filter(p => p.slug.current !== slug).slice(0, 3);
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+const isBlock = (b: SanityBodyContent): b is SanityBodyBlock => b._type === 'block';
+const isImage = (b: SanityBodyContent): b is SanityBodyImage => b._type === 'image';
+
+function blockToHtml(block: SanityBodyBlock): string {
+  return (block.children ?? [])
+    .map(span => {
+      let t = span.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      if (span.marks?.includes('strong')) t = `<strong>${t}</strong>`;
+      if (span.marks?.includes('em')) t = `<em>${t}</em>`;
+      return t;
+    })
+    .join('');
+}
+---
+
+<Layout
+  title={`${post.title} — LSPD`}
+  description={post.excerpt}
+>
+
+  <!-- ═══════════════════════════ EN-TÊTE ARTICLE ══════════════════════════ -->
+  <section class="bg-lspd-navy-deep relative overflow-hidden pt-10 pb-12">
+    <div
+      class="absolute inset-0 opacity-[0.035]"
+      style="background-image: repeating-linear-gradient(45deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 22px); background-size: 22px 22px;"
+    ></div>
+    <div class="absolute bottom-0 left-0 right-0 h-px bg-lspd-gold/20"></div>
+
+    <div class="relative max-w-4xl mx-auto px-6 lg:px-8">
+      <nav aria-label="Fil d'Ariane" class="flex items-center gap-2 mb-6">
+        <a href="/" class="text-[10px] font-mono tracking-[0.3em] uppercase text-white/35 hover:text-white/60 transition-colors">
+          Accueil
+        </a>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-white/25 shrink-0">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <a href="/actualites" class="text-[10px] font-mono tracking-[0.3em] uppercase text-white/35 hover:text-white/60 transition-colors">
+          Actualités
+        </a>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-white/25 shrink-0">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <span class="text-[10px] font-mono tracking-[0.3em] uppercase text-lspd-gold/70 truncate">
+          {post.tags?.[0] ?? 'Communiqué'}
+        </span>
+      </nav>
+
+      <h1 class="font-display font-semibold text-white leading-tight mb-5" style="font-size: clamp(1.9rem, 4.5vw, 2.75rem);">
+        {post.title}
+      </h1>
+
+      <div class="w-10 h-px bg-lspd-gold/35 mb-5"></div>
+
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        {post.tags?.[0] && (
+          <span class="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-[0.3em] uppercase text-lspd-gold/60 border border-lspd-gold/25 px-2.5 py-1">
+            {post.tags[0]}
+          </span>
+        )}
+        <time datetime={post.publishedAt} class="text-[11px] font-mono text-white/40">
+          {formatDate(post.publishedAt)}
+        </time>
+        <span class="text-[11px] font-mono text-white/40">
+          {post.author.rank} {post.author.name}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ CORPS DE L'ARTICLE ═══════════════════════ -->
+  <section class="bg-bg py-14 md:py-20">
+    <div class="max-w-2xl mx-auto px-6">
+
+      {post.coverImage?.url && (
+        <figure class="mb-10 -mx-6 md:mx-0" data-anim="fade-up">
+          <img
+            src={`${post.coverImage.url}?w=900&auto=format`}
+            alt={post.coverImage.alt ?? ''}
+            class="w-full"
+            style="border-radius: var(--radius-sm)"
+            loading="eager"
+          />
+        </figure>
+      )}
+
+      <p class="font-display italic text-text text-xl leading-relaxed mb-10 pb-10 border-b border-border" data-anim="fade-up">
+        {post.excerpt}
+      </p>
+
+      <div class="prose-article">
+        {(post.body ?? []).map(block => {
+          if (isImage(block)) {
+            return block.url ? (
+              <figure class="my-8">
+                <img
+                  src={`${block.url}?w=800&auto=format`}
+                  alt={block.alt ?? ''}
+                  loading="lazy"
+                  class="w-full"
+                  style="border-radius: var(--radius-sm)"
+                />
+                {block.caption && (
+                  <figcaption class="text-center text-xs font-mono text-text-subtle mt-2">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ) : null;
+          }
+
+          if (isBlock(block)) {
+            const html = blockToHtml(block);
+            if (!html) return null;
+
+            if (block.style === 'h2') return (
+              <h2 class="font-display text-2xl font-semibold text-text pl-4 border-l-2 border-lspd-gold/55 mt-10 mb-4" set:html={html} />
+            );
+            if (block.style === 'h3') return (
+              <h3 class="font-display text-xl font-semibold text-text mt-8 mb-3" set:html={html} />
+            );
+            if (block.style === 'blockquote') return (
+              <blockquote class="pl-5 border-l-2 border-lspd-gold/45 mt-8 mb-8">
+                <p class="font-display italic text-text text-lg leading-relaxed" set:html={html} />
+                <footer class="mt-2.5 text-[10px] font-mono tracking-widest uppercase text-text-subtle">
+                  — {post.author.rank} {post.author.name}
+                </footer>
+              </blockquote>
+            );
+
+            return <p class="text-text text-base leading-relaxed mb-5" set:html={html} />;
+          }
+
+          return null;
+        })}
+      </div>
+
+      <!-- Signature officielle -->
+      <div class="mt-12 pt-8 border-t border-border" data-anim="fade-up">
+        <div class="flex items-start justify-between gap-6 flex-wrap">
+          <div>
+            <p class="text-[10px] font-mono tracking-[0.3em] uppercase text-text-subtle mb-1">Signé par</p>
+            <p class="font-display text-lg font-semibold text-text">{post.author.name}</p>
+            <p class="text-[11px] font-mono text-text-muted">{post.author.rank}</p>
+            <p class="text-[11px] font-mono text-text-subtle">Los Santos Police Department</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-mono tracking-[0.3em] uppercase text-text-subtle mb-1">Émis le</p>
+            <time datetime={post.publishedAt} class="font-display text-lg font-semibold text-text">
+              {formatDate(post.publishedAt)}
+            </time>
+          </div>
+        </div>
+
+        {(post.tags ?? []).length > 0 && (
+          <div class="mt-7 flex flex-wrap gap-2">
+            {post.tags!.map(tag => (
+              <span
+                class="text-[9px] font-mono tracking-widest uppercase text-text-subtle border border-border px-2.5 py-1"
+                style="border-radius: var(--radius-sm)"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div class="mt-7">
+          <a
+            href="/actualites"
+            class="inline-flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-text-subtle hover:text-text transition-colors group"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="group-hover:-translate-x-0.5 transition-transform">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour aux actualités
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ À LIRE ÉGALEMENT ═════════════════════════ -->
+  {related.length > 0 && (
+    <section class="bg-lspd-navy py-14 md:py-20">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+        <div class="flex items-end justify-between mb-10" data-anim="fade-up">
+          <div>
+            <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2 opacity-70">Communiqués</p>
+            <h2 class="font-display text-3xl font-semibold text-white">À lire également</h2>
+            <div class="mt-3 w-10 h-px bg-lspd-gold/50"></div>
+          </div>
+          <a
+            href="/actualites"
+            class="hidden sm:inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors group"
+          >
+            Tous les communiqués
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="group-hover:translate-x-0.5 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6" data-anim="stagger">
+          {related.map(rel => (
+            <article class="border border-white/10 group hover:border-lspd-gold/30 transition-colors duration-300 flex flex-col overflow-hidden" style="border-radius: var(--radius-sm)">
+              <div class="flex items-center justify-between px-5 py-3 border-b border-white/10">
+                <span class="text-[10px] font-mono tracking-widest uppercase text-white/40">
+                  {rel.tags?.[0] ?? 'Communiqué'}
+                </span>
+                <time datetime={rel.publishedAt} class="text-[10px] font-mono text-white/30">
+                  {formatDate(rel.publishedAt)}
+                </time>
+              </div>
+              <div class="p-5 flex flex-col flex-1">
+                <h3 class="font-display text-lg font-semibold text-white leading-snug mb-3">
+                  {rel.title}
+                </h3>
+                <p class="text-white/40 text-sm leading-relaxed flex-1 mb-5 line-clamp-3">
+                  {rel.excerpt}
+                </p>
+                <div class="border-t border-white/10 pt-3">
+                  <a
+                    href={`/actualites/${rel.slug.current}`}
+                    class="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-white/40 hover:text-lspd-gold transition-colors group/lnk"
+                  >
+                    Consulter
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="group-hover/lnk:translate-x-0.5 transition-transform">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              <div class="h-0.5 bg-lspd-gold origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            </article>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  )}
+
+</Layout>
