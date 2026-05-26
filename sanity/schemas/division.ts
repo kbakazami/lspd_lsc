@@ -76,6 +76,19 @@ export default defineType({
       options: { hotspot: true },
     }),
     defineField({
+      name: 'divisionType',
+      title: 'Type de division',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Division majeure', value: 'majeure' },
+          { title: 'Division mineure', value: 'mineure' },
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'minRankLevel',
       title: 'Niveau de grade minimum requis',
       type: 'number',

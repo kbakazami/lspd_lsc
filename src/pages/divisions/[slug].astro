@@ -73,12 +73,24 @@ function initials(name: string): string {
       </nav>
 
       <div class="flex items-start gap-7">
-        <!-- Badge abbreviation -->
-        <div
-          class="shrink-0 hidden sm:flex w-16 h-16 border border-lspd-gold/40 items-center justify-center overflow-hidden"
-          style="border-radius: var(--radius-sm)"
-        >
-          <span class="text-lspd-gold font-mono text-[10px] font-semibold tracking-tight leading-none px-2 text-center">{division.abbreviation}</span>
+        <!-- Badge logo / abbreviation -->
+        <div class="shrink-0 hidden sm:flex w-16 h-16 items-center justify-center">
+          {division.coverImage?.url ? (
+            <img
+              src={`${division.coverImage.url}?w=128&auto=format`}
+              alt={division.name}
+              width="64"
+              height="64"
+              class="w-full h-full object-contain"
+            />
+          ) : (
+            <div
+              class="w-full h-full border border-lspd-gold/40 flex items-center justify-center"
+              style="border-radius: var(--radius-sm)"
+            >
+              <span class="text-lspd-gold font-mono text-[10px] font-semibold tracking-tight leading-none px-2 text-center">{division.abbreviation}</span>
+            </div>
+          )}
         </div>
 
         <div class="flex-1 min-w-0">
@@ -91,6 +103,16 @@ function initials(name: string): string {
 
           <!-- Métadonnées en ligne -->
           <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {division.divisionType && (
+              <div
+                class={`inline-flex items-center px-2.5 h-6 border ${division.divisionType === 'majeure' ? 'border-lspd-gold/50 bg-lspd-gold/10' : 'border-white/15 bg-white/5'}`}
+                style="border-radius: var(--radius-sm)"
+              >
+                <span class={`font-mono text-[9px] tracking-[0.22em] uppercase ${division.divisionType === 'majeure' ? 'text-lspd-gold' : 'text-white/40'}`}>
+                  Division {division.divisionType}
+                </span>
+              </div>
+            )}
             {division.lead && (
               <div class="flex items-center gap-2">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
@@ -102,16 +124,6 @@ function initials(name: string): string {
                 </span>
               </div>
             )}
-            <div class="flex items-center gap-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              <span class="text-[11px] font-mono text-white/50">
-                {division.memberCount} membre{division.memberCount > 1 ? 's' : ''}
-              </span>
-            </div>
             {minRankLabel && (
               <div class="flex items-center gap-2">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
@@ -132,18 +144,12 @@ function initials(name: string): string {
     <div class="max-w-3xl mx-auto px-6 lg:px-8">
 
       {division.coverImage?.url && (
-        <div class="relative overflow-hidden mb-14 border border-border/50" style="border-radius: var(--radius-md); height: clamp(220px, 40vh, 400px);" data-anim="fade-up">
+        <div class="flex items-center justify-center py-12 mb-10 border-b border-border" data-anim="fade-up">
           <img
-            src={`${division.coverImage.url}?w=900&auto=format`}
+            src={`${division.coverImage.url}?w=600&auto=format`}
             alt={division.coverImage.alt ?? division.name}
-            width="900"
-            height="400"
-            class="w-full h-full object-contain bg-lspd-navy"
+            class="h-52 w-auto max-w-sm object-contain"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-lspd-navy-deep/40 to-transparent pointer-events-none"></div>
-          <div class="absolute bottom-4 right-4">
-            <span class="text-[9px] font-mono tracking-[0.25em] uppercase text-white/30">{division.abbreviation}</span>
-          </div>
         </div>
       )}
 
@@ -154,7 +160,7 @@ function initials(name: string): string {
       </div>
 
       {division.excerpt && (
-        <p class="font-display italic text-text text-lg leading-relaxed mb-8" data-anim="fade-up">
+        <p class="font-display font-semibold italic text-text text-lg leading-relaxed mb-8" data-anim="fade-up">
           {division.excerpt}
         </p>
       )}
@@ -190,7 +196,7 @@ function initials(name: string): string {
             );
             if (block.style === 'blockquote') return (
               <blockquote class="pl-5 border-l-2 border-lspd-gold/45 my-6">
-                <p class="font-display italic text-text text-lg leading-relaxed" set:html={html} />
+                <p class="font-display font-semibold italic text-text text-lg leading-relaxed" set:html={html} />
               </blockquote>
             );
             return <p class="text-text text-base leading-relaxed" set:html={html} />;
@@ -208,15 +214,19 @@ function initials(name: string): string {
 
         {division.lead && (
           <div class="flex items-start gap-4 px-5 py-4 border-b border-border bg-surface">
-            <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Commandant</span>
+            <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Chef de division</span>
             <span class="text-sm text-text font-medium">{division.lead.rank} {division.lead.name}</span>
           </div>
         )}
 
-        <div class={`flex items-start gap-4 px-5 py-4 bg-surface${minRankLabel ? ' border-b border-border' : ''}`}>
-          <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Effectifs</span>
-          <span class="text-sm text-text font-medium">{division.memberCount} officier{division.memberCount > 1 ? 's' : ''} affecté{division.memberCount > 1 ? 's' : ''}</span>
-        </div>
+{division.divisionType && (
+          <div class={`flex items-start gap-4 px-5 py-4 bg-surface${minRankLabel ? ' border-b border-border' : ''}`}>
+            <span class="text-[10px] font-mono tracking-widest uppercase text-text-subtle w-36 shrink-0 pt-0.5">Classification</span>
+            <span class={`text-sm font-medium ${division.divisionType === 'majeure' ? 'text-lspd-gold' : 'text-text'}`}>
+              Division {division.divisionType}
+            </span>
+          </div>
+        )}
 
         {minRankLabel && (
           <div class="flex items-start gap-4 px-5 py-4 bg-surface">
@@ -235,8 +245,8 @@ function initials(name: string): string {
       <div class="max-w-3xl mx-auto px-6 lg:px-8">
 
         <div class="mb-8" data-anim="fade-up">
-          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Ressources humaines</p>
-          <h2 class="font-display text-2xl font-semibold text-text">Personnel de la division</h2>
+          <p class="text-lspd-gold text-[10px] font-mono tracking-[0.3em] uppercase mb-2">Encadrement</p>
+          <h2 class="font-display text-2xl font-semibold text-text">Leads de la division</h2>
           <div class="mt-3 w-10 h-px bg-lspd-gold"></div>
         </div>
 

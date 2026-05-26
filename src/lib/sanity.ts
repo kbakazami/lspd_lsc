@@ -66,6 +66,8 @@ export interface SanityDivisionMember {
   avatar?: { url: string };
 }
 
+export type DivisionType = 'majeure' | 'mineure';
+
 export interface SanityDivision {
   _id: string;
   name: string;
@@ -74,6 +76,7 @@ export interface SanityDivision {
   excerpt?: string;
   lead?: SanityDivisionLead;
   memberCount: number;
+  divisionType?: DivisionType;
   minRankLevel?: number;
   coverImage?: { url: string; alt?: string };
 }
@@ -88,6 +91,7 @@ export interface SanityDivisionDetail {
   lead?: SanityDivisionLead;
   members?: SanityDivisionMember[];
   memberCount: number;
+  divisionType?: DivisionType;
   minRankLevel?: number;
   coverImage?: { url: string; alt?: string };
 }
@@ -199,6 +203,7 @@ const ALL_DIVISIONS_QUERY = `
     excerpt,
     "lead": lead->{ name, rank },
     "memberCount": count(members),
+    divisionType,
     minRankLevel,
     "coverImage": coverImage{ "url": asset->url, alt }
   }
@@ -222,6 +227,7 @@ const DIVISION_BY_SLUG_QUERY = `
     "lead": lead->{ name, rank },
     "members": members[]->{ name, rank, "avatar": avatar{ "url": asset->url } },
     "memberCount": count(members),
+    divisionType,
     minRankLevel,
     "coverImage": coverImage{ "url": asset->url, alt }
   }

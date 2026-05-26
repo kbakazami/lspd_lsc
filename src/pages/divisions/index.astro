@@ -67,34 +67,52 @@ const divisions = await getAllDivisions();
             {divisions.map(div => (
               <a
                 href={`/divisions/${div.slug.current}`}
-                class="border border-border group hover:border-lspd-gold/40 transition-all duration-300 flex flex-col overflow-hidden"
+                class="border border-border group hover:border-lspd-gold/40 transition-all duration-300 flex flex-col overflow-hidden bg-surface"
                 style="border-radius: var(--radius-md)"
               >
-                <!-- Image ou fallback navy -->
-                <div class="relative h-44 shrink-0 overflow-hidden">
+                <!-- Zone logo — fond transparent, logo affiché en entier -->
+                <div class="flex items-center justify-center px-8 pt-8 pb-6">
                   {div.coverImage?.url ? (
                     <img
-                      src={`${div.coverImage.url}?w=480&auto=format`}
-                      alt=""
-                      aria-hidden="true"
+                      src={`${div.coverImage.url}?w=200&auto=format`}
+                      alt={div.name}
                       loading="lazy"
-                      class="w-full h-full object-contain bg-lspd-navy group-hover:scale-[1.03] transition-transform duration-500"
+                      width="80"
+                      height="80"
+                      class="h-20 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div class="w-full h-full bg-lspd-navy flex items-center justify-center">
-                      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(45deg, #c9a961 0, #c9a961 1px, transparent 0, transparent 22px); background-size: 22px 22px;"></div>
-                      <span class="relative font-display text-4xl font-semibold text-lspd-gold/15 tracking-widest select-none">{div.abbreviation}</span>
+                    <div
+                      class="w-20 h-20 border border-lspd-gold/20 flex items-center justify-center group-hover:border-lspd-gold/45 transition-colors"
+                      style="border-radius: var(--radius-sm)"
+                    >
+                      <span class="font-display text-2xl font-semibold text-lspd-gold/35 tracking-widest">{div.abbreviation}</span>
                     </div>
                   )}
-                  <div class="absolute inset-0 bg-gradient-to-t from-lspd-navy/40 to-transparent pointer-events-none"></div>
                 </div>
-                <!-- Contenu sur fond solide -->
-                <div class="p-6 flex flex-col flex-1 bg-surface">
-                  <div
-                    class="inline-flex items-center self-start px-2 h-7 border border-lspd-gold/30 mb-4 group-hover:border-lspd-gold/60 transition-colors shrink-0"
-                    style="border-radius: var(--radius-sm)"
-                  >
-                    <span class="text-lspd-gold font-mono text-[10px] font-semibold tracking-wide whitespace-nowrap">{div.abbreviation}</span>
+
+                <!-- Séparateur -->
+                <div class="mx-6 h-px bg-border group-hover:bg-lspd-gold/20 transition-colors duration-300"></div>
+
+                <!-- Contenu -->
+                <div class="p-6 flex flex-col flex-1">
+                  <div class="flex items-center gap-2 mb-3 flex-wrap">
+                    <div
+                      class="inline-flex items-center px-2 h-6 border border-lspd-gold/30 group-hover:border-lspd-gold/60 transition-colors shrink-0"
+                      style="border-radius: var(--radius-sm)"
+                    >
+                      <span class="text-lspd-gold font-mono text-[9px] font-semibold tracking-wide whitespace-nowrap">{div.abbreviation}</span>
+                    </div>
+                    {div.divisionType && (
+                      <div
+                        class={`inline-flex items-center px-2 h-6 border shrink-0 ${div.divisionType === 'majeure' ? 'border-lspd-gold/50 bg-lspd-gold/8' : 'border-border'}`}
+                        style="border-radius: var(--radius-sm)"
+                      >
+                        <span class={`font-mono text-[9px] tracking-[0.2em] uppercase whitespace-nowrap ${div.divisionType === 'majeure' ? 'text-lspd-gold' : 'text-text-subtle'}`}>
+                          {div.divisionType === 'majeure' ? 'Majeure' : 'Mineure'}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <h3 class="font-display text-lg font-semibold text-text leading-snug mb-2">{div.name}</h3>
                   <p class="text-text-muted text-sm leading-relaxed flex-1 mb-5">{div.excerpt}</p>
@@ -108,12 +126,6 @@ const divisions = await getAllDivisions();
                         <span class="text-[10px] font-mono text-text-subtle">{div.lead.rank} {div.lead.name}</span>
                       </div>
                     )}
-                    <div class="flex items-center gap-1.5">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                      </svg>
-                      <span class="text-[10px] font-mono text-text-subtle">{div.memberCount} membre{div.memberCount > 1 ? 's' : ''}</span>
-                    </div>
                     {div.minRankLevel && (
                       <div class="flex items-center gap-1.5">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lspd-gold/50 shrink-0">
