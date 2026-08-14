@@ -9,6 +9,12 @@ const candidatureSchema = z
       .int()
       .min(18, 'Vous devez avoir au moins 18 ans')
       .max(99),
+    telephone: z
+      .string()
+      .trim()
+      .min(4, 'Le numéro de téléphone est requis')
+      .max(20, 'Le numéro de téléphone est trop long')
+      .regex(/^[0-9+().\-\s]+$/, 'Numéro de téléphone invalide'),
     experience: z.enum(['oui', 'non'] as const, {
       message: 'Veuillez indiquer si vous avez une expérience RP',
     }),
@@ -61,6 +67,7 @@ export const server = {
         { name: 'Nom', value: data.nom, inline: true },
         { name: 'Prénom', value: data.prenom, inline: true },
         { name: 'Âge', value: `${data.age} ans`, inline: true },
+        { name: 'Téléphone', value: data.telephone, inline: true },
         {
           name: 'Expérience RP antérieure',
           value: data.experience === 'oui' ? 'Oui' : 'Non',

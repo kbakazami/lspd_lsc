@@ -264,25 +264,52 @@ const initialMonth = today.getMonth();
 
             </div>
 
-            <!-- Âge -->
-            <div class="max-w-[180px]">
-              <label for="age" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
-                Âge <span class="text-danger" aria-hidden="true">*</span>
-              </label>
-              <input
-                type="number"
-                id="age"
-                name="age"
-                min="18"
-                max="99"
-                required
-                aria-describedby={inputErrors.age ? 'age-error' : undefined}
-                class={`w-full px-4 py-3 bg-bg border text-text text-sm font-mono focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.age ? 'border-danger' : 'border-border'}`}
-                style="border-radius: var(--radius-sm)"
-              />
-              {inputErrors.age && (
-                <p id="age-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.age}</p>
-              )}
+            <!-- Âge & Téléphone -->
+            <div class="grid sm:grid-cols-2 gap-6">
+
+              <div class="max-w-[180px]">
+                <label for="age" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                  Âge <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  min="18"
+                  max="99"
+                  required
+                  aria-describedby={inputErrors.age ? 'age-error' : undefined}
+                  class={`w-full px-4 py-3 bg-bg border text-text text-sm font-mono focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.age ? 'border-danger' : 'border-border'}`}
+                  style="border-radius: var(--radius-sm)"
+                />
+                {inputErrors.age && (
+                  <p id="age-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.age}</p>
+                )}
+              </div>
+
+              <div>
+                <label for="telephone" class="block text-[10px] font-mono tracking-[0.2em] uppercase text-text-muted mb-2">
+                  Numéro de téléphone <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="telephone"
+                  name="telephone"
+                  required
+                  inputmode="tel"
+                  placeholder="555-0187"
+                  autocomplete="tel"
+                  aria-describedby={inputErrors.telephone ? 'telephone-error' : 'telephone-hint'}
+                  class={`w-full px-4 py-3 bg-bg border text-text text-sm font-mono focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.telephone ? 'border-danger' : 'border-border'}`}
+                  style="border-radius: var(--radius-sm)"
+                />
+                {inputErrors.telephone ? (
+                  <p id="telephone-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.telephone}</p>
+                ) : (
+                  <p id="telephone-hint" class="mt-1.5 text-[11px] text-text-subtle">Ligne sur laquelle le Bureau des Ressources Humaines pourra vous joindre.</p>
+                )}
+              </div>
+
             </div>
 
             <!-- Séparateur section expérience -->
