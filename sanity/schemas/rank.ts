@@ -31,7 +31,7 @@ export default defineType({
       title: 'Catégorie',
       type: 'string',
       options: {
-        list: RANK_TIERS,
+        list: [...RANK_TIERS],
         layout: 'radio',
       },
       validation: (Rule) => Rule.required(),
@@ -70,7 +70,7 @@ export default defineType({
       subtitle: 'tier',
       media: 'badge',
     },
-    prepare({ title, subtitle, media }: { title: string; subtitle: string; media: unknown }) {
+    prepare({ title, subtitle, media }) {
       const tier = RANK_TIERS.find(t => t.value === subtitle);
       return { title, subtitle: tier?.title ?? subtitle, media };
     },

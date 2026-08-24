@@ -119,8 +119,8 @@ const isActive = (href: string) =>
 <script>
   const btn = document.getElementById('burger-btn') as HTMLButtonElement;
   const menu = document.getElementById('mobile-menu') as HTMLElement;
-  const iconBurger = document.getElementById('icon-burger') as SVGElement;
-  const iconClose = document.getElementById('icon-close') as SVGElement;
+  const iconBurger = document.getElementById('icon-burger')!;
+  const iconClose = document.getElementById('icon-close')!;
 
   function openMenu() {
     menu.classList.remove('hidden');

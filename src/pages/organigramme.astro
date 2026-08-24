@@ -1,10 +1,10 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { getAllRanks } from '@/lib/sanity';
+import { getAllRanks, type SanityRank } from '@/lib/sanity';
 
 const ranksFromSanity = await getAllRanks();
 
-const mockRanks = [
+const mockRanks: SanityRank[] = [
   {
     _id: 'chief',
     level: 11,
@@ -95,7 +95,7 @@ const mockRanks = [
   },
 ];
 
-const ranks = ranksFromSanity.length > 0 ? ranksFromSanity : mockRanks;
+const ranks: SanityRank[] = ranksFromSanity.length > 0 ? ranksFromSanity : mockRanks;
 
 const tiers = [
   { id: 'direction',    label: 'Direction'              },
@@ -182,7 +182,7 @@ const gradesByTier = tiers.map(tier => ({
             </div>
 
             <!-- Lignes de grades -->
-            {tier.grades.map((grade, i) => (
+            {tier.grades.map((grade) => (
               <div class={`flex items-start gap-5 px-5 py-5 border-b transition-colors duration-150 last:border-b-0 ${
                 tier.id === 'direction'
                   ? 'bg-lspd-navy border-lspd-gold/10 hover:bg-lspd-navy-deep'
