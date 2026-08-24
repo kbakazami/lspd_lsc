@@ -112,6 +112,22 @@ export interface RecruitmentEvent {
   discordEventUrl: string | null;
 }
 
+export interface RecruitmentSettings {
+  isOpen: boolean;
+  closedTitle: string;
+  closedMessage: string;
+  reopenDate: string | null;
+}
+
+/** Valeurs retenues tant qu'aucun document n'existe dans Sanity. */
+export const DEFAULT_RECRUITMENT_SETTINGS: RecruitmentSettings = {
+  isOpen: true,
+  closedTitle: 'Recrutement suspendu',
+  closedMessage:
+    "Le Bureau des Ressources Humaines n'accepte aucun nouveau dossier de candidature pour le moment. Les prochaines sessions de recrutement seront annoncées dans les actualités du département.",
+  reopenDate: null,
+};
+
 function createSanityClient() {
   const projectId = import.meta.env.PUBLIC_SANITY_PROJECT_ID;
   const dataset = import.meta.env.PUBLIC_SANITY_DATASET ?? 'production';
@@ -145,6 +161,15 @@ const UPCOMING_EVENTS_QUERY = `
     description,
     status,
     discordEventUrl
+  }
+`;
+
+const RECRUITMENT_SETTINGS_QUERY = `
+  *[_type == "recruitmentSettings"][0] {
+    isOpen,
+    closedTitle,
+    closedMessage,
+    reopenDate
   }
 `;
 
@@ -317,5 +342,32 @@ export async function getUpcomingRecruitmentEvents(): Promise<RecruitmentEvent[]
   } catch (err) {
     console.error('[sanity] Erreur lors du chargement des événements de recrutement :', err);
     return [];
+  }
+}
+
+export async function getRecruitmentSettings(): Promise<RecruitmentSettings> {
+  const client = createSanityClient();
+
+  if (!client) {
+    console.warn('[sanity] PUBLIC_SANITY_PROJECT_ID non configuré — recrutement considéré ouvert');
+    return DEFAULT_RECRUITMENT_SETTINGS;
+  }
+
+  try {
+    const doc = await client.fetch<Partial<RecruitmentSettings> | null>(
+      RECRUITMENT_SETTINGS_QUERY,
+    );
+
+    if (!doc) return DEFAULT_RECRUITMENT_SETTINGS;
+
+    return {
+      isOpen: doc.isOpen !== false,
+      closedTitle: doc.closedTitle || DEFAULT_RECRUITMENT_SETTINGS.closedTitle,
+      closedMessage: doc.closedMessage || DEFAULT_RECRUITMENT_SETTINGS.closedMessage,
+      reopenDate: doc.reopenDate ?? null,
+    };
+  } catch (err) {
+    console.error('[sanity] Erreur lors du chargement des paramètres de recrutement :', err);
+    return DEFAULT_RECRUITMENT_SETTINGS;
   }
 }
