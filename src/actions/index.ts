@@ -1,4 +1,5 @@
-import { defineAction } from 'astro:actions';
+import { ActionError, defineAction } from 'astro:actions';
+import { getRecruitmentSettings } from '@/lib/sanity';
 import { z } from 'astro:schema';
 
 /**
@@ -62,6 +63,16 @@ export const server = {
     accept: 'form',
     input: candidatureSchema,
     handler: async (data) => {
+      // Garde-fou : le formulaire est retiré de la page quand le recrutement est
+      // fermé, mais rien n'empêche un POST direct sur l'action.
+      const recruitment = await getRecruitmentSettings();
+      if (!recruitment.isOpen) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: 'Le recrutement est actuellement fermé — aucun dossier ne peut être déposé.',
+        });
+      }
+
       const webhookUrl = import.meta.env.DISCORD_WEBHOOK_RECRUTEMENT;
 
       if (!webhookUrl) {
@@ -69,8 +80,8 @@ export const server = {
         return { ok: true as const };
       }
 
-      const siteUrl = import.meta.env.PUBLIC_SITE_URL ?? 'https://lspd.lsh-rp.fr';
-      const sealUrl = `${siteUrl}/badges/lspd-seal.png`;
+      const siteUrl = import.meta.env.PUBLIC_SITE_URL ?? 'https://lspd-lsc.vercel.app';
+      const sealUrl = `${siteUrl}/lspd-seal.webp`;
 
       const trunc = (str: string, max = 1024) =>
         str.length > max ? str.slice(0, max - 1) + '…' : str;
@@ -111,9 +122,10 @@ export const server = {
             title: `Dossier de candidature — ${data.prenom} ${data.nom}`,
             description: `Un nouveau dossier a été déposé auprès du Bureau des Ressources Humaines.\n**Date de réception :** ${dateStr}`,
             color: 0xc9a961,
+            thumbnail: { url: sealUrl },
             fields,
             footer: {
-              text: 'Bureau des Ressources Humaines • lspd.lsh-rp.fr',
+              text: 'Bureau des Ressources Humaines • lspd-lsc.vercel.app',
               icon_url: sealUrl,
             },
             timestamp: new Date().toISOString(),
