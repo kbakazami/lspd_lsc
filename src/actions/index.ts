@@ -1,6 +1,13 @@
 import { defineAction } from 'astro:actions';
 import { z } from 'astro:schema';
 
+/**
+ * Discord tronque la valeur d'un champ d'embed à 1024 caractères.
+ * On borne les champs libres en deçà pour qu'aucun dossier n'arrive
+ * coupé par des points de suspension côté Ressources Humaines.
+ */
+export const CHAMP_LIBRE_MAX = 1000;
+
 const candidatureSchema = z
   .object({
     nom: z.string().min(2, 'Le nom est requis').max(50),
@@ -18,15 +25,27 @@ const candidatureSchema = z
     experience: z.enum(['oui', 'non'] as const, {
       message: 'Veuillez indiquer si vous avez une expérience RP',
     }),
-    experienceDetails: z.string().max(1500).optional(),
+    experienceDetails: z
+      .string()
+      .max(
+        CHAMP_LIBRE_MAX,
+        `Le détail des expériences ne doit pas dépasser ${CHAMP_LIBRE_MAX} caractères`,
+      )
+      .optional(),
     motivation: z
       .string()
       .min(80, 'La lettre de motivation doit comporter au moins 80 caractères')
-      .max(3000),
+      .max(
+        CHAMP_LIBRE_MAX,
+        `La lettre de motivation ne doit pas dépasser ${CHAMP_LIBRE_MAX} caractères`,
+      ),
     objectifs: z
       .string()
       .min(40, 'Les objectifs doivent comporter au moins 40 caractères')
-      .max(2000),
+      .max(
+        CHAMP_LIBRE_MAX,
+        `Les objectifs ne doivent pas dépasser ${CHAMP_LIBRE_MAX} caractères`,
+      ),
   })
   .refine(
     (data) =>

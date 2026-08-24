@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import { actions, isInputError } from 'astro:actions';
 import { getUpcomingRecruitmentEvents } from '@/lib/sanity';
 import RecruitmentCalendar from '@/components/sections/RecruitmentCalendar';
+import { CHAMP_LIBRE_MAX } from '@/actions/index';
 
 export const prerender = false;
 
@@ -139,7 +140,13 @@ const initialMonth = today.getMonth();
       {submitted ? (
         <!-- Confirmation -->
         <div class="max-w-3xl mx-auto">
-          <div class="bg-surface border border-border p-12 text-center relative">
+          <div
+            id="candidature-confirmation"
+            tabindex="-1"
+            role="status"
+            aria-live="polite"
+            class="bg-surface border border-border p-12 text-center relative scroll-mt-28 outline-none"
+          >
             <div class="absolute top-4 left-4 w-6 h-6 border-t border-l border-lspd-gold/35"></div>
             <div class="absolute top-4 right-4 w-6 h-6 border-t border-r border-lspd-gold/35"></div>
             <div class="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-lspd-gold/35"></div>
@@ -196,7 +203,13 @@ const initialMonth = today.getMonth();
             <div>
 
           {result?.error && !isInputError(result.error) && (
-            <div class="mb-8 px-5 py-4 border border-danger/30 bg-danger/5 flex items-start gap-3" style="border-radius: var(--radius-sm)">
+            <div
+              id="candidature-erreur"
+              tabindex="-1"
+              role="alert"
+              class="mb-8 px-5 py-4 border border-danger/30 bg-danger/5 flex items-start gap-3 scroll-mt-28 outline-none"
+              style="border-radius: var(--radius-sm)"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="1.5" stroke-linecap="round" class="shrink-0 mt-0.5">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="8" x2="12" y2="12"/>
@@ -353,15 +366,19 @@ const initialMonth = today.getMonth();
               </label>
               <p class="text-[11px] text-text-subtle mb-3 leading-relaxed">
                 Indiquez les serveurs, factions ou postes occupés ainsi que la durée approximative.
+                Maximum {CHAMP_LIBRE_MAX} caractères.
               </p>
               <textarea
                 id="experienceDetails"
                 name="experienceDetails"
                 rows="4"
+                maxlength={CHAMP_LIBRE_MAX}
+                data-compteur
                 aria-describedby={inputErrors.experienceDetails ? 'expdetails-error' : undefined}
                 class={`w-full px-4 py-3 bg-bg border text-text text-sm leading-relaxed resize-y focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.experienceDetails ? 'border-danger' : 'border-border'}`}
                 style="border-radius: var(--radius-sm); min-height: 100px;"
               ></textarea>
+              <p data-compteur-pour="experienceDetails" class="mt-1.5 text-[11px] text-text-subtle font-mono text-right">0 / {CHAMP_LIBRE_MAX}</p>
               {inputErrors.experienceDetails && (
                 <p id="expdetails-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.experienceDetails}</p>
               )}
@@ -380,17 +397,20 @@ const initialMonth = today.getMonth();
               </label>
               <p class="text-[11px] text-text-subtle mb-3 leading-relaxed">
                 Expliquez en détail les raisons qui vous poussent à rejoindre le LSPD.
-                Soyez précis et personnel. Minimum 80 caractères.
+                Soyez précis et personnel. Entre 80 et {CHAMP_LIBRE_MAX} caractères.
               </p>
               <textarea
                 id="motivation"
                 name="motivation"
                 rows="8"
                 required
+                maxlength={CHAMP_LIBRE_MAX}
+                data-compteur
                 aria-describedby={inputErrors.motivation ? 'motivation-error' : undefined}
                 class={`w-full px-4 py-3 bg-bg border text-text text-sm leading-relaxed resize-y focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.motivation ? 'border-danger' : 'border-border'}`}
                 style="border-radius: var(--radius-sm); min-height: 160px;"
               ></textarea>
+              <p data-compteur-pour="motivation" class="mt-1.5 text-[11px] text-text-subtle font-mono text-right">0 / {CHAMP_LIBRE_MAX}</p>
               {inputErrors.motivation && (
                 <p id="motivation-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.motivation}</p>
               )}
@@ -403,17 +423,20 @@ const initialMonth = today.getMonth();
               </label>
               <p class="text-[11px] text-text-subtle mb-3 leading-relaxed">
                 Décrivez ce que vous souhaitez apporter au département et vos ambitions à long terme.
-                Minimum 40 caractères.
+                Entre 40 et {CHAMP_LIBRE_MAX} caractères.
               </p>
               <textarea
                 id="objectifs"
                 name="objectifs"
                 rows="5"
                 required
+                maxlength={CHAMP_LIBRE_MAX}
+                data-compteur
                 aria-describedby={inputErrors.objectifs ? 'objectifs-error' : undefined}
                 class={`w-full px-4 py-3 bg-bg border text-text text-sm leading-relaxed resize-y focus:outline-none focus:border-lspd-navy transition-colors ${inputErrors.objectifs ? 'border-danger' : 'border-border'}`}
                 style="border-radius: var(--radius-sm); min-height: 120px;"
               ></textarea>
+              <p data-compteur-pour="objectifs" class="mt-1.5 text-[11px] text-text-subtle font-mono text-right">0 / {CHAMP_LIBRE_MAX}</p>
               {inputErrors.objectifs && (
                 <p id="objectifs-error" class="mt-1.5 text-[11px] text-danger font-mono">{inputErrors.objectifs}</p>
               )}
@@ -545,4 +568,52 @@ const initialMonth = today.getMonth();
       });
     });
   });
+
+  /* Compteur de caractères : `maxlength` borne la saisie sur la limite d'un
+     champ d'embed Discord, le compteur rend cette limite visible au candidat. */
+  const zonesLibres = document.querySelectorAll<HTMLTextAreaElement>('textarea[data-compteur]');
+
+  zonesLibres.forEach(zone => {
+    const compteur = document.querySelector<HTMLElement>(`[data-compteur-pour="${zone.id}"]`);
+    if (!compteur) return;
+
+    const max = zone.maxLength;
+    const sync = () => {
+      const saisis = zone.value.length;
+      compteur.textContent = `${saisis} / ${max}`;
+      compteur.classList.toggle('text-warning', saisis >= max);
+      compteur.classList.toggle('text-text-subtle', saisis < max);
+    };
+
+    zone.addEventListener('input', sync);
+    sync();
+  });
+
+  /* Après soumission, la page est rechargée en haut : on amène le candidat
+     sur le compte rendu — accusé de réception, erreur de transmission, ou
+     à défaut le premier champ rejeté par la validation. */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const compteRendu =
+    document.getElementById('candidature-confirmation') ??
+    document.getElementById('candidature-erreur');
+
+  /* Les champs en erreur sont les seuls à décrire un message `<champ>-error`. */
+  const premierChampRejete = document.querySelector<HTMLElement>(
+    '[aria-describedby$="-error"]'
+  );
+
+  const cible = compteRendu ?? premierChampRejete;
+
+  if (cible) {
+    cible.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'center',
+    });
+    /* Un champ masqué (section conditionnelle repliée) n'est pas focusable :
+       le défilement seul suffit alors. */
+    if (cible.offsetParent !== null || cible === compteRendu) {
+      cible.focus({ preventScroll: true });
+    }
+  }
 </script>
